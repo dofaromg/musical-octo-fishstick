@@ -18,14 +18,14 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v5
-      - id: get_step
+      - id: read_current_step
         run: |
           echo "current_step=$(cat ./.github/steps/-step.txt)" >> $GITHUB_OUTPUT
     outputs:
-      current_step: ${{ steps.get_step.outputs.current_step }}
+      current_step: ${{ steps.read_current_step.outputs.current_step }}
 
-  on_agent_directory:
-    name: On addition of an agentService module
+  validate_agent_service_file:
+    name: Validate agentService module exists
     needs: get_current_step
 
     if: >-
@@ -41,17 +41,17 @@ jobs:
         with:
           fetch-depth: 0 # Let's get all the branches
 
-      - name: Check agentService.js file exists
-        id: check_agent
+      - name: Verify agentService.js file exists
+        id: verify_agent_service_file
         run: |
           if [ -f "packages/webapi/agentService.js" ]; then
-            echo "agent_exists=true" >> $GITHUB_OUTPUT
+            echo "file_exists=true" >> $GITHUB_OUTPUT
           else
-            echo "agent_exists=false" >> $GITHUB_OUTPUT
+            echo "file_exists=false" >> $GITHUB_OUTPUT
           fi
 
       - name: Update to step 7
-        if: steps.check_agent.outputs.agent_exists == 'true'
+        if: steps.verify_agent_service_file.outputs.file_exists == 'true'
         uses: skills/action-update-step@v2
         with:
           token: ${{ secrets.GITHUB_TOKEN }}

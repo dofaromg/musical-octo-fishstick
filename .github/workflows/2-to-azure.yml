@@ -19,14 +19,14 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v5
-      - id: get_step
+      - id: read_current_step
         run: |
           echo "current_step=$(cat ./.github/steps/-step.txt)" >> $GITHUB_OUTPUT
     outputs:
-      current_step: ${{ steps.get_step.outputs.current_step }}
+      current_step: ${{ steps.read_current_step.outputs.current_step }}
 
-  on_aifoundrycode:
-    name: On addition of the basic code connecting to Azure AI Foundry
+  validate_azure_ai_foundry_code:
+    name: Validate Azure AI Foundry connection code
     needs: get_current_step
 
     if: >-

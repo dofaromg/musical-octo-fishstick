@@ -18,14 +18,14 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v5
-      - id: get_step
+      - id: read_current_step
         run: |
           echo "current_step=$(cat ./.github/steps/-step.txt)" >> $GITHUB_OUTPUT
     outputs:
-      current_step: ${{ steps.get_step.outputs.current_step }}
+      current_step: ${{ steps.read_current_step.outputs.current_step }}
 
-  on_azureconfig:
-    name: On addition of infrastructure code to deploy to Azure
+  validate_azure_configuration:
+    name: Validate Azure infrastructure configuration
     needs: get_current_step
 
     if: >-
