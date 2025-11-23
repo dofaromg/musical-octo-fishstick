@@ -12,9 +12,8 @@ jobs:
   handle_submission:
     name: Handle Project Submission
     if: >-
-      ${{ github.event_name == 'issues' && 
-          (contains(github.event.issue.title, 'Project Submission') || 
-           contains(join(github.event.issue.labels.*.name, ' '), 'submission')) }}
+      ${{ contains(github.event.issue.title, 'Project Submission') || 
+          contains(join(github.event.issue.labels.*.name, ' '), 'submission') }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -62,27 +61,14 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             const labels = context.payload.issue.labels.map(label => label.name);
-            if (!labels.includes("people's choice")) {
+            const requiredLabels = ["people's choice", "submission", "build-a-thon"];
+            const missingLabels = requiredLabels.filter(label => !labels.includes(label));
+            
+            if (missingLabels.length > 0) {
               await github.rest.issues.addLabels({
                 issue_number: context.issue.number,
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                labels: ["people's choice"]
-              });
-            }
-            if (!labels.includes("submission")) {
-              await github.rest.issues.addLabels({
-                issue_number: context.issue.number,
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                labels: ["submission"]
-              });
-            }
-            if (!labels.includes("build-a-thon")) {
-              await github.rest.issues.addLabels({
-                issue_number: context.issue.number,
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                labels: ["build-a-thon"]
+                labels: missingLabels
               });
             }
