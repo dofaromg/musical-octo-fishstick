@@ -18,14 +18,14 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v5
-      - id: get_step
+      - id: read_current_step
         run: |
           echo "current_step=$(cat ./.github/steps/-step.txt)" >> $GITHUB_OUTPUT
     outputs:
-      current_step: ${{ steps.get_step.outputs.current_step }}
+      current_step: ${{ steps.read_current_step.outputs.current_step }}
 
-  on_data_directory:
-    name: On addition of data directory
+  validate_data_directory_exists:
+    name: Validate data directory exists
     needs: get_current_step
 
     if: >-
@@ -41,17 +41,17 @@ jobs:
         with:
           fetch-depth: 0 # Let's get all the branches
 
-      - name: Check data directory exists
-        id: check_data
+      - name: Verify data directory exists
+        id: verify_data_directory
         run: |
           if [ -d "data" ]; then
-            echo "data_exists=true" >> $GITHUB_OUTPUT
+            echo "directory_exists=true" >> $GITHUB_OUTPUT
           else
-            echo "data_exists=false" >> $GITHUB_OUTPUT
+            echo "directory_exists=false" >> $GITHUB_OUTPUT
           fi
 
       - name: Update to step 5
-        if: steps.check_data.outputs.data_exists == 'true'
+        if: steps.verify_data_directory.outputs.directory_exists == 'true'
         uses: skills/action-update-step@v2
         with:
           token: ${{ secrets.GITHUB_TOKEN }}

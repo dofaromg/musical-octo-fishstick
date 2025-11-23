@@ -18,14 +18,14 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v5
-      - id: get_step
+      - id: read_current_step
         run: |
           echo "current_step=$(cat ./.github/steps/-step.txt)" >> $GITHUB_OUTPUT
     outputs:
-      current_step: ${{ steps.get_step.outputs.current_step }}
+      current_step: ${{ steps.read_current_step.outputs.current_step }}
 
-  on_langchain_dependency:
-    name: On addition of LangChain to package.json
+  validate_langchain_dependency:
+    name: Validate LangChain dependency in package.json
     needs: get_current_step
 
     if: >-
@@ -41,17 +41,17 @@ jobs:
         with:
           fetch-depth: 0 # Let's get all the branches
 
-      - name: Check for LangChain in package.json
-        id: check_langchain
+      - name: Verify LangChain dependency in package.json
+        id: verify_langchain_dependency
         run: |
           if [ -f "packages/webapi/package.json" ] && grep -q "@langchain/openai" packages/webapi/package.json; then
-            echo "langchain_exists=true" >> $GITHUB_OUTPUT
+            echo "dependency_exists=true" >> $GITHUB_OUTPUT
           else
-            echo "langchain_exists=false" >> $GITHUB_OUTPUT
+            echo "dependency_exists=false" >> $GITHUB_OUTPUT
           fi
 
       - name: Update to step 6
-        if: steps.check_langchain.outputs.langchain_exists == 'true'
+        if: steps.verify_langchain_dependency.outputs.dependency_exists == 'true'
         uses: skills/action-update-step@v2
         with:
           token: ${{ secrets.GITHUB_TOKEN }}

@@ -18,14 +18,14 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v5
-      - id: get_step
+      - id: read_current_step
         run: |
           echo "current_step=$(cat ./.github/steps/-step.txt)" >> $GITHUB_OUTPUT
     outputs:
-      current_step: ${{ steps.get_step.outputs.current_step }}
+      current_step: ${{ steps.read_current_step.outputs.current_step }}
 
-  on_agent_directory:
-    name: On addition of node-os-mcp directory
+  validate_mcp_directory:
+    name: Validate node-os-mcp directory exists
     needs: get_current_step
 
     if: >-
@@ -42,16 +42,16 @@ jobs:
           fetch-depth: 0 # Let's get all the branches
 
       - name: Check node-os-mcp directory exists
-        id: check_node-os-mcp
+        id: check_mcp_directory
         run: |
           if [ -d "packages/node-os-mcp" ]; then
-            echo "agent_exists=true" >> $GITHUB_OUTPUT
+            echo "mcp_directory_exists=true" >> $GITHUB_OUTPUT
           else
-            echo "agent_exists=false" >> $GITHUB_OUTPUT
+            echo "mcp_directory_exists=false" >> $GITHUB_OUTPUT
           fi
 
       - name: Update to step 8
-        if: steps.check_node-os-mcp.outputs.node-os-mcp_exists == 'true'
+        if: steps.check_mcp_directory.outputs.mcp_directory_exists == 'true'
         uses: skills/action-update-step@v2
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
