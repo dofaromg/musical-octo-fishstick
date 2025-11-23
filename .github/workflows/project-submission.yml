@@ -1,0 +1,88 @@
+name: Project Submission Handler
+
+on:
+  issues:
+    types: [opened, labeled]
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  handle_submission:
+    name: Handle Project Submission
+    if: >-
+      ${{ github.event_name == 'issues' && 
+          (contains(github.event.issue.title, 'Project Submission') || 
+           contains(join(github.event.issue.labels.*.name, ' '), 'submission')) }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Welcome and acknowledge submission
+        uses: actions/github-script@v8
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const readmeUrl = `https://github.com/${context.repo.owner}/${context.repo.repo}/blob/main/README.md`;
+            const message = `🎉 **Thank you for your project submission!**
+            
+            Your customized azd template project has been successfully submitted to the JS AI Build-a-thon!
+            
+            ## What's Next?
+            
+            1. ✅ Your submission is now live and visible to the community
+            2. 🗳️ Share your project with peers and encourage them to upvote this issue
+            3. 🏆 Projects with the most upvotes will be considered for the **People's Choice Award**
+            4. 📝 You can continue to update this issue as you improve your project
+            
+            ## Tips for Success
+            
+            - Keep your project description clear and compelling
+            - Add screenshots or demos if available
+            - Explain the real-world impact of your solution
+            - Engage with comments and questions from the community
+            
+            Good luck! 🚀
+            
+            ---
+            *Continue exploring more quests in the [README](${readmeUrl})*`;
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: message
+            });
+
+      - name: Add people's choice label if not present
+        uses: actions/github-script@v8
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const labels = context.payload.issue.labels.map(label => label.name);
+            if (!labels.includes("people's choice")) {
+              await github.rest.issues.addLabels({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                labels: ["people's choice"]
+              });
+            }
+            if (!labels.includes("submission")) {
+              await github.rest.issues.addLabels({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                labels: ["submission"]
+              });
+            }
+            if (!labels.includes("build-a-thon")) {
+              await github.rest.issues.addLabels({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                labels: ["build-a-thon"]
+              });
+            }
